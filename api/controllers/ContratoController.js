@@ -1,3 +1,4 @@
+/* globals Contrato */
 /**
  * ContratoController
  *
@@ -18,7 +19,9 @@ module.exports = {
       params.where = JSON.parse(params.where);
       if(params.where.dependencia2 || params.where.provedorContratista || params.where.unidadCompradora){
 
-        if(!params.where.moneda) params.where.moneda = 'MXN';
+        if(!params.where.moneda){
+          params.where.moneda = 'MXN';
+        };
 
         Contrato.find(params).sum('importe_contrato').exec(function(e,result){
           var sum = result.length ? result[0].importe_contrato : 0;
