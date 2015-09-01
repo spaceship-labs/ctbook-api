@@ -47,7 +47,6 @@ describe(TEST_NAME, function() {
   describe("GET sum", function() {
     it("should return json with a sum", function(done) {
       var url = '/contrato/sum?where=%7B%22provedorContratista%22:%5B%22' + contracts[0].provedorContratista.id + '%22%5D%7D';
-      console.log(url);
       request.get(url)
         .expect(200)
         .expect('Content-Type', /json/)
