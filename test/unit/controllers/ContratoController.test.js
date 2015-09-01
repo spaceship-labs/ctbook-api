@@ -1,10 +1,23 @@
 require("sails-test-helper");
 var contracts = [];
+var where = {
+  fecha_inicio_year: {
+    ">=": 2000,
+    "<=": 2016
+  }
+}
+var defaultQuery = {
+  limit: 10,
+  skip: 0,
+  sort: 'importe_contrato DESC',
+  where: JSON.stringify(where)
+};
+
 describe(TEST_NAME, function() {
   describe("GET index", function() {
     it("should return json with contracts", function(done) {
-      request.get('/contrato?limit=10&skip=0&sort=importe_contrato+DESC&where=%7B%22fecha_inicio_year%22:%7B%22%3E%22:2000,%22%3C%22:2016%7D%7D')
-        //request.get('/contrato')
+      request.get('/contrato')
+        .query(defaultQuery)
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function(err, res) {
@@ -17,7 +30,9 @@ describe(TEST_NAME, function() {
     });
 
     it("should return json with contracts with max limit 100", function(done) {
-      request.get('/contrato?limit=200&skip=0&sort=importe_contrato+DESC&where=%7B%22fecha_inicio_year%22:%7B%22%3E%22:2000,%22%3C%22:2016%7D%7D')
+      defaultQuery.limit = 200;
+      request.get('/contrato')
+        .query(defaultQuery)
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function(err, res) {
@@ -25,6 +40,7 @@ describe(TEST_NAME, function() {
           contracts = res.body;
           contracts.should.not.be.empty;
           contracts.length.should.be.at.most(100);
+          defaultQuery.limit = 10;
           done();
         });
     });
@@ -46,8 +62,14 @@ describe(TEST_NAME, function() {
 
   describe("GET sum", function() {
     it("should return json with a sum", function(done) {
-      var url = '/contrato/sum?where=%7B%22provedorContratista%22:%5B%22' + contracts[0].provedorContratista.id + '%22%5D%7D';
+      var where = {
+        provedorContratista: [contracts[0].provedorContratista.id]
+      };
+      var url = '/contrato/sum';
       request.get(url)
+        .query({
+          where: JSON.stringify(where)
+        })
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function(err, res) {
@@ -58,7 +80,15 @@ describe(TEST_NAME, function() {
     });
 
     it("should return json with a 0 sum when no contracts found", function(done) {
-      request.get('/contrato/sum?where=%7B%22fecha_inicio_year%22:%7B%22%3E%22:1985,%22%3C%22:1999%7D,%22provedorContratista%22:%5B%22' + contracts[0].provedorContratista.id + '%22%5D%7D')
+      var where = {
+        provedorContratista: ['nonexistentid'],
+        moneda : 'MXN'
+      };
+
+      request.get('/contrato/sum')
+        .query({
+          where: JSON.stringify(where)
+        })
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function(err, res) {
@@ -69,7 +99,20 @@ describe(TEST_NAME, function() {
     });
 
     it("should return an error when search too broad", function(done) {
-      request.get('/contrato/sum?limit=10&skip=0&sort=importe_contrato+DESC&where=%7B%22fecha_inicio_year%22:%7B%22%3E%22:2000,%22%3C%22:2016%7D%7D')
+      request.get('/contrato/sum')
+        .query(defaultQuery)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) throw (err);
+          res.body.error.should.exist.and.equal('at least one of dependencia2, provedorContratista or unidadCompradora must be defined');
+          done();
+        });
+    });
+
+
+    it("should return an error when no where params", function(done) {
+      request.get('/contrato/sum')
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function(err, res) {
@@ -81,16 +124,16 @@ describe(TEST_NAME, function() {
 
   });
 
-  var contrato;
-  before(function(done) {
-    request.get('/contrato?limit=1&skip=0&sort=importe_contrato+DESC&where=%7B%22fecha_inicio_year%22:%7B%22%3E%22:2000,%22%3C%22:2016%7D%7D')
-      .end(function(err, res) {
-        if (err) throw (err);
-        contrato = res.body[0];
-        done();
-      });
+    var contrato;
+    before(function(done) {
+      request.get('/contrato?limit=1&skip=0&sort=importe_contrato+DESC&where=%7B%22fecha_inicio_year%22:%7B%22%3E%22:2000,%22%3C%22:2016%7D%7D')
+        .end(function(err, res) {
+          if (err) throw (err);
+          contrato = res.body[0];
+          done();
+        });
 
-  });
+    });
 
   describe('CRUD methods', function() {
 

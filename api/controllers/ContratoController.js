@@ -21,7 +21,6 @@ module.exports = {
         if(!params.where.moneda) params.where.moneda = 'MXN';
 
         Contrato.find(params).sum('importe_contrato').exec(function(e,result){
-          if(e) throw(e);
           var sum = result.length ? result[0].importe_contrato : 0;
           response = {
             sum : sum,
