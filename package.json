@@ -27,7 +27,7 @@
   "scripts": {
     "debug": "node debug app.js",
     "start": "node app.js",
-    "test": "istanbul cover _mocha test/helpers/bootstrap.js test/unit/**/*.test.js -- --recursive -t 30000 -R spec"
+    "test": "istanbul cover _mocha -- test/helpers/bootstrap.js test/unit/**/*.test.js --recursive -t 30000 -R spec"
   },
   "main": "app.js",
   "repository": {
@@ -38,6 +38,7 @@
   "license": "",
   "devDependencies": {
     "chai-things": "^0.2.0",
+    "istanbul": "^0.3.19",
     "sails-hook-autoreload": "^0.12.0",
     "sails-test-helper": "^0.4.4"
   },
