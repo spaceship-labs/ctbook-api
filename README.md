@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/spaceship-labs/ctbook-api.svg?branch=master)](https://travis-ci.org/spaceship-labs/ctbook-api)
 [![Code Climate](https://codeclimate.com/github/spaceship-labs/ctbook-api/badges/gpa.svg)](https://codeclimate.com/github/spaceship-labs/ctbook-api)
 [![Test Coverage](https://codeclimate.com/github/spaceship-labs/ctbook-api/badges/coverage.svg)](https://codeclimate.com/github/spaceship-labs/ctbook-api/coverage)
 
