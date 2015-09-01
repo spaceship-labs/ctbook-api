@@ -1,7 +1,7 @@
 {
   "name": "ctbook-api",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "a Sails application",
   "keywords": [],
   "dependencies": {
@@ -19,7 +19,7 @@
   "main": "app.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/sonny/ctbook-api.git"
+    "url": "git://github.com/spaceship-labs/ctbook-api.git"
   },
   "author": "sonny",
   "license": "",
@@ -27,5 +27,10 @@
     "chai-things": "^0.2.0",
     "sails-hook-autoreload": "^0.12.0",
     "sails-test-helper": "^0.4.4"
+  },
+  "engines": {
+      "node": ">=0.12.0",
+      "npm" : ">=1.4.0"
+    }
   }
 }
