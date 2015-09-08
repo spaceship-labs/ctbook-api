@@ -19,6 +19,7 @@
 
 module.exports.policies = {
    '*': false,
+   'twitter' : true,
    'contrato' : {
       'find' : true,
       'findOne' : true,
