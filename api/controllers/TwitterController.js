@@ -19,7 +19,7 @@ module.exports = {
     });
 
     client.get('search/tweets',{q:q,count:'40'}, function(error, tweets, response) {
-      if (error) throw error;
+      //if (error) throw error;
       res.json(tweets.statuses);
     });
     /*
