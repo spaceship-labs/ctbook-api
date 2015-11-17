@@ -40,6 +40,10 @@ module.exports.routes = {
     blueprint: 'count',
     model : 'contrato'
   },
+  'get /empresa/count' : {
+    blueprint: 'count',
+    model : 'empresa'
+  },
 
   /***************************************************************************
   *                                                                          *
