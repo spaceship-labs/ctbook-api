@@ -25,6 +25,7 @@ module.exports.policies = {
       'findOne' : true,
       'count' : true,
       'sum' : true,
+      'stats' : true
     },
     'dependencia' : {
       'find' : true,
