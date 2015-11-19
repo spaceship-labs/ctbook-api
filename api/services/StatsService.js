@@ -20,7 +20,7 @@ module.exports = {
       for (var i = limits.min; i <= limits.max; i++) {
         values.push({
           year: i,
-          ammount: getSeries(_contracts, {
+          ammount: getSum(_contracts, {
             fecha_inicio_year: i,
             tipo_procedimiento: types[j]
           })
@@ -33,7 +33,39 @@ module.exports = {
     }
     return series;
 
+  },
+  agencyDistribution: function(contracts) {
+    collection = gauss.Collection;
+    var _contracts = new collection(contracts);
+    var agencies = getAgencies(_contracts);
+    var values = [];
+    for (var i = 0; i < agencies.length; i++) {
+      values.push({
+        agency: agencies[i],
+        ammount: getSum(_contracts, {
+          dependencia: agencies[i]
+        })
+      });
+    }
+    return values.sort(function(a, b) {
+      if (a.ammount > b.ammount) {
+        return -1;
+      }
+      if (a.ammount < b.ammount) {
+        return 1;
+      }
+      return 0;
+    });
+
+
   }
+
+}
+
+var getAgencies = function(contracts) {
+  return contracts.map(function(contract) {
+    return contract.dependencia
+  }).unique();
 }
 
 var getProcedureTypes = function(contracts) {
@@ -53,7 +85,7 @@ var getMinMaxYears = function(contracts) {
   };
 }
 
-var getSeries = function(contracts, params) {
+var getSum = function(contracts, params) {
   return contracts.find(params).map(function(contract) {
     return contract.importe_contrato
   }).toVector().sum();

@@ -45,10 +45,12 @@ module.exports = {
     if (params.where) {
       params.where = JSON.parse(params.where);
 
-      Contrato.find(params).exec(function(e, result) {
-        var timeSeries = StatsService.timeSeries(result);
+      Contrato.find(params).exec(function(e, contracts) {
+        var timeSeries = StatsService.timeSeries(contracts);
+        var agencyDistribution = StatsService.agencyDistribution(contracts);
         res.json({
-          timeSeries: timeSeries
+          timeSeries: timeSeries,
+          agencyDistribution: agencyDistribution
         });
       });
 
