@@ -46,11 +46,11 @@ module.exports = {
       params.where = JSON.parse(params.where);
 
       Contrato.find(params).exec(function(e, contracts) {
-        var timeSeries = StatsService.timeSeries(contracts);
-        var agencyDistribution = StatsService.agencyDistribution(contracts);
         res.json({
-          timeSeries: timeSeries,
-          agencyDistribution: agencyDistribution
+          timeSeries: StatsService.timeSeries(contracts),
+          agencyDistribution: StatsService.agencyDistribution(contracts),
+          generalStats : StatsService.generalStats(contracts),
+          frequency : StatsService.frequency(contracts),
         });
       });
 
