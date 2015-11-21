@@ -6,7 +6,8 @@
  */
 
 var gauss = require('gauss');
-var histogram = require('histogramjs')
+var histogram = require('histogramjs');
+var counter = 0;
 
 module.exports = {
   timeSeries: function(contracts) {
@@ -53,6 +54,7 @@ module.exports = {
   generalStats: function(contracts) {
     collection = gauss.Collection;
     var _contracts = new collection(contracts);
+
     return {
       total: getSum(_contracts),
       count: contracts.length,
@@ -77,18 +79,59 @@ module.exports = {
         error: 'not enough datapoints'
       };
     }
+  },
+  allCompanies: function(page) {
+    if(!page) page = 0;
+    var limit = 100;
+    counter = 1;
 
-  }
+    Empresa.find({
+      limit: limit,
+      skip : page * limit
+    }).exec(function(e, companies) {
+      async.map(companies,saveCompanyStats,function(e,companies){
+        var processed = companies.length + (page*limit);
+        console.log('processed '+processed+' companies ');
+        if(companies.length === limit){
+          StatsService.allCompanies(page+1);
+        }
+      });
+    });
+  },
+
 }
 
-var chartHist = function(hist){
-  var chart = {key:"Histogram",values:[]};
-  for(var i = 0;i<hist.data.length;i++){
+var saveCompanyStats = function(company,cb) {
+  Contrato.find({
+    where: {
+      provedorContratista: company.id
+    }
+  }).exec(function(e,contracts){
+    var stats = StatsService.generalStats(contracts);
+    console.log('saving company #'+counter);
+    counter++;
+    Empresa.update(company.id,{
+      totalContractAmmount : stats.total,
+      totalContractCount : stats.count,
+      contractsMean : stats.mean,
+      contractsStdev : stats.stdev,
+      contractsMin : stats.limits.min,
+      contractsMax : stats.limits.max
+    },cb);
+  });
+}
+
+var chartHist = function(hist) {
+  var chart = {
+    key: "Histogram",
+    values: []
+  };
+  for (var i = 0; i < hist.data.length; i++) {
     var sum = new gauss.Vector(hist.data[i]).sum();
     chart.values.push({
-      range : Math.round(hist.bins[i]/100000)/10+' - '+Math.round(hist.bins[i+1]/100000)/10,
-      frequency : hist.data[i].length,
-      sum : sum
+      range: Math.round(hist.bins[i] / 100000) / 10 + ' - ' + Math.round(hist.bins[i + 1] / 100000) / 10,
+      frequency: hist.data[i].length,
+      sum: sum
     });
   }
   return [chart];
@@ -114,10 +157,10 @@ var binData = function(data) {
       var vector = new gauss.Vector(values);
       var newHist = binData(values);
       //This is so that the array is spliced on the same level as oposed to inserted as an elemnt (splice an array into an array)
-      var args = [i,1].concat(newHist.data);
+      var args = [i, 1].concat(newHist.data);
       // This shit's because when you splice in the bins you already got the first value (or you could also have the last)
-      newHist.bins.splice(0,1);
-      var args2 = [i+1,1].concat(newHist.bins);
+      newHist.bins.splice(0, 1);
+      var args2 = [i + 1, 1].concat(newHist.bins);
       Array.prototype.splice.apply(hist, args);
       Array.prototype.splice.apply(bins, args2);
     }
