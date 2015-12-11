@@ -96,9 +96,66 @@ describe(TEST_NAME, function() {
     });
   });
 
-  describe.skip("allCompanies", function() {
-    it('should iterate each company', function() {
-      StatsService.allCompanies();
+  describe("allCompanies", function() {
+    var companies, companiesUpdates;
+    beforeEach(function() {
+      companies = [];
+      companiesUpdates = [];
+      for (var i=0; i < 700; i++) {
+        companies.push({
+          id: i
+        });
+      }
+
+      var exec = function(err, res) {
+        return function(done) {
+          return {
+            exec: function(done) {
+              done(err, res);
+            }
+          };
+        }
+      };
+      global.Empresa = {
+        count: exec(null, companies.length),
+        find: function (){
+          return {
+            paginate: function(params) {
+              var page = params.page,
+                  limit = params.limit
+              var paginate = companies.slice((page-1)*limit , limit * page);
+              return exec(null, paginate)();
+            }
+          }
+        },
+        update: function(id, obj, done) {
+          obj.id = id;
+          companiesUpdates.push(id);
+          done(null, obj);
+        }
+      };
+    });
+
+    it('should iterate each company', function(done) {
+      StatsService.allCompanies(0, function(err, processed) {
+        var updates = companiesUpdates.sort(),
+            ids = companies.map(function(c) { return c.id; }).sort();
+        processed.should.be.equal(companies.length);
+        companiesUpdates.length.should.be.deep.equal(processed);
+        updates.should.be.deep.equal(ids);
+        done();
+      });
+    });
+
+    it('should iterate each company with page', function(done) {
+      StatsService.allCompanies(1, function(err, processed) {
+        var updates = companiesUpdates.sort(),
+            ids = companies.slice(500).map(function(c) { return c.id; }).sort();
+        processed.should.be.equal(200);
+        companiesUpdates.length.should.be.deep.equal(processed);
+        updates.should.be.deep.equal(ids);
+        done();
+      });
     });
   });
 });

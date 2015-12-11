@@ -80,26 +80,38 @@ module.exports = {
       };
     }
   },
-  allCompanies: function(page) {
-    if(!page) page = 0;
-    var limit = 100;
-    counter = 1;
-
-    Empresa.find({
-      limit: limit,
-      skip : page * limit
-    }).exec(function(e, companies) {
-      async.map(companies,saveCompanyStats,function(e,companies){
-        var processed = companies.length + (page*limit);
-        console.log('processed '+processed+' companies ');
-        if(companies.length === limit){
-          StatsService.allCompanies(page+1);
-        }
+  allCompanies: function(pageInit, done) {
+    pageInit = pageInit || 0;
+    var limit = 500;
+    Empresa.count().exec(function(err, total) {
+      if(err) return done && done(err);
+      var times = Math.ceil(total / limit);
+      async.timesSeries(times, findCompanyAndSaveStats(pageInit, limit), function(err, processed) {
+        if (err) sails.log.error(err) && done && done(err);
+        var counter = 0;
+        processed.forEach(function(pr) {
+          counter += pr.length;
+        });
+        if (done) return done(null, counter);
+        sails.log.info("processed: "+ counter + ', total: '+ total);
       });
     });
-  },
 
+  }
 }
+
+var findCompanyAndSaveStats = function(pageInit, limit) {
+  return function(page, next) {
+    if (page < pageInit) return next(null, []);
+    Empresa.find().paginate({page: page + 1, limit: limit}).exec(function(e, companies) {
+      async.map(companies, saveCompanyStats, function(e, companiesUpdate){
+        next(null, companies.map(function (c) {
+          return c && c.id;
+        }));
+      });
+    });
+  }
+};
 
 var saveCompanyStats = function(company,cb) {
   Contrato.find({
@@ -108,8 +120,6 @@ var saveCompanyStats = function(company,cb) {
     }
   }).exec(function(e,contracts){
     var stats = StatsService.generalStats(contracts);
-    console.log('saving company #'+counter);
-    counter++;
     Empresa.update(company.id,{
       totalContractAmmount : stats.total,
       totalContractCount : stats.count,
