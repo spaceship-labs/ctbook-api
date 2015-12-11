@@ -197,7 +197,7 @@ var getAgencies = function(contracts) {
 
 var getProcedureTypes = function(contracts) {
   return contracts.map(function(contract) {
-    return contract.tipo_procedimiento
+    return contract.tipo_procedimiento;
   }).unique();
 }
 
