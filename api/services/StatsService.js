@@ -84,7 +84,7 @@ module.exports = {
     pageInit = pageInit || 0;
     var limit = 500;
     Empresa.count().exec(function(err, total) {
-      if(err) return done && done(err);
+      if(err) return sails.log.error(err) && done && done(err);;
       var times = Math.ceil(total / limit);
       async.timesSeries(times, findCompanyAndSaveStats(pageInit, limit), function(err, processed) {
         if (err) sails.log.error(err) && done && done(err);
@@ -105,6 +105,7 @@ var findCompanyAndSaveStats = function(pageInit, limit) {
     if (page < pageInit) return next(null, []);
     Empresa.find().paginate({page: page + 1, limit: limit}).exec(function(e, companies) {
       async.map(companies, saveCompanyStats, function(e, companiesUpdate){
+        sails.log.info("page processed: "+ page);
         next(null, companies.map(function (c) {
           return c && c.id;
         }));

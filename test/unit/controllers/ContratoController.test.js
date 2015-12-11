@@ -232,5 +232,42 @@ describe(TEST_NAME, function() {
 
   });
 
+  describe("GET stats", function() {
+    it("should return json with stats", function(done) {
+      request.get('/contrato/stats')
+        .query({
+          where: JSON.stringify({
+            fecha_inicio_year: {
+              ">=": 2000,
+              "<=": 2016
+            },
+            limit: 10
+          })
+        })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) throw (err);
+          res.body.should.be.have.property('timeSeries');
+          res.body.should.be.have.property('agencyDistribution');
+          res.body.should.be.have.property('generalStats');
+          res.body.should.be.have.property('frequency');
+          done();
+        });
+    });
+
+    it("should return err if no params", function(done) {
+      request.get('/contrato/stats')
+        .query({})
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) throw (err);
+          res.body.error.should.be.exist;
+          done();
+        });
+    });
+  });
+
 
 });
