@@ -30,6 +30,7 @@ module.exports.policies = {
     'dependencia' : {
       'find' : true,
       'findOne' : true,
+      'favorites' : true,
     },
     'unidadCompradora' : {
       'find' : true,

@@ -51,6 +51,24 @@ module.exports = {
     }
     return values.sort(sort);
   },
+  companyDistribution: function(contracts) {
+    collection = gauss.Collection;
+    var _contracts = new collection(contracts);
+    var companies = getCompanies(_contracts);
+    var values = [];
+    for (var i = 0; i < companies.length; i++) {
+      var company = companies[i].split('|')[0];
+      var id = companies[i].split('|')[1];
+      values.push({
+        company: company,
+        id: id,
+        ammount: getSum(_contracts, {
+          provedorContratista: id
+        })
+      });
+    }
+    return values.sort(sort);
+  },
   generalStats: function(contracts) {
     collection = gauss.Collection;
     var _contracts = new collection(contracts);
@@ -205,6 +223,11 @@ var getAgencies = function(contracts) {
     return contract.dependencia
   }).unique();
 }
+var getCompanies = function(contracts) {
+  return contracts.map(function(contract) {
+    return contract.proveedor_contratista+"|"+contract.provedorContratista;
+  }).unique();
+}
 
 var getProcedureTypes = function(contracts) {
   return contracts.map(function(contract) {
@@ -212,7 +235,8 @@ var getProcedureTypes = function(contracts) {
   }).unique();
 }
 
-var getMinMax = function(contracts, property) {
+var getMinMax = function(contracts, property,params) {
+  if (params) contracts = contracts.find(params);
   var vector =
     contracts.map(function(contract) {
       return contract[property];

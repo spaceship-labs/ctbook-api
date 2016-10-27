@@ -6,6 +6,15 @@
  */
 
 module.exports = {
-	
+	favorites : function(req,res){
+		var id = req.allParams().id;
+		if(id){
+			Dependencia.favorites(id).then(function(companies){
+				res.json(companies);
+			});	
+		}else{
+			res.json({error:'You must provide a Dependencia ID'})
+		}
+	}
 };
 

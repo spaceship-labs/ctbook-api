@@ -16,5 +16,14 @@ module.exports = {
       collection: 'unidadCompradora',
       via: 'dependencia'
     }
+  },
+  favorites: function(id) {
+    return Contrato.find({
+      where: {
+        dependencia2: id
+      }
+    }).then(function(contracts) {
+      return StatsService.companyDistribution(contracts);
+    });
   }
 };
