@@ -6,6 +6,7 @@
   "keywords": [],
   "dependencies": {
     "ejs": "~0.8.4",
+    "fs": "0.0.1-security",
     "gauss": "^0.2.12",
     "grunt": "0.4.2",
     "grunt-contrib-clean": "~0.5.0",
@@ -21,12 +22,15 @@
     "grunt-sync": "~0.0.4",
     "histogramjs": "0.0.1",
     "include-all": "~0.1.3",
+    "promise-map-series": "^0.2.3",
+    "q": "^1.4.1",
     "rc": "~0.5.0",
     "sails": "~0.11.0",
     "sails-disk": "~0.10.0",
     "sails-mongo": "^0.11.2",
     "twitter": "^1.2.5",
-    "user-stream": "0.0.7"
+    "user-stream": "0.0.7",
+    "util": "^0.10.3"
   },
   "scripts": {
     "debug": "node debug app.js",

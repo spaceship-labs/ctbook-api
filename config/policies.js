@@ -40,5 +40,6 @@ module.exports.policies = {
       'find' : true,
       'findOne' : true,
       'count' : true,
+      'satblack' : true,
     }
 };

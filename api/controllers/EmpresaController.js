@@ -6,6 +6,10 @@
  */
 
 module.exports = {
-	
+	satblack : function(req,res){
+		SatService.find(function(matches){
+			res.json(matches);
+		});
+	}
 };
 
