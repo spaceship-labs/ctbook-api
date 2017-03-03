@@ -9,7 +9,7 @@
 module.exports = {
 
   sum: function(req, res) {
-    var params = pepareParams(req);
+    var params = prepareParams(req);
     var response = {
       error: 'at least one of dependencia2, provedorContratista or unidadCompradora must be defined'
     };
@@ -38,7 +38,7 @@ module.exports = {
   },
 
   stats: function(req, res) {
-    var params = pepareParams(req);
+    var params = prepareParams(req);
     var response = {
       error: 'at least one of dependencia2, provedorContratista or unidadCompradora must be defined'
     };
@@ -60,7 +60,7 @@ module.exports = {
   }
 }
 
-var pepareParams = function(req) {
+var prepareParams = function(req) {
   var params = req.params.all();
   delete params.id;
   delete params.limit;

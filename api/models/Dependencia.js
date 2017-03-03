@@ -18,12 +18,30 @@ module.exports = {
     }
   },
   favorites: function(id) {
+    console.log(id);
     return Contrato.find({
       where: {
         dependencia2: id
       }
-    }).then(function(contracts) {
+    }).populate('provedorContratista').then(function(contracts) {
+      console.log('found ', contracts.length);
       return StatsService.companyDistribution(contracts);
     });
+  },
+  blacklisted: function(id) {
+    var q = require('q');
+    var deferred = q.defer();
+    Empresa.find()
+      .where({
+        "Definitivo": { "!": null }
+      })
+      .populate('contracts', { dependencia2: id })
+      .then(function(companies) {
+        var filtered = companies.filter(function(company) {
+          return company.contracts.length
+        });
+        deferred.resolve(filtered);
+      })
+      return deferred.promise;
   }
 };

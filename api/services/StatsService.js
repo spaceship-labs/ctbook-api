@@ -55,16 +55,35 @@ module.exports = {
     collection = gauss.Collection;
     var _contracts = new collection(contracts);
     var companies = getCompanies(_contracts);
+    _contracts = _contracts.map(function(contract){
+      contract.provedorContratista = contract.provedorContratista.id;
+      return contract;
+    });
     var values = [];
+    console.log('length: '+companies.length);
     for (var i = 0; i < companies.length; i++) {
-      var company = companies[i].split('|')[0];
-      var id = companies[i].split('|')[1];
+      var company = companies[i].split('|');
+      var name = company[0];
+      var id = company[1];
+      var total = company[2];
+      var dependenciaAmmount = getSum(_contracts, {
+        provedorContratista: id
+      });
+      var percent = dependenciaAmmount / total * 100;
+      if(total === "0"){
+        console.log('update',id);
+        saveCompanyStats({id:id},function(err,company){
+          company = company[0];
+          console.log(company.proveedor_contratista,company.totalContractAmmount);
+        });
+      };
       values.push({
-        company: company,
-        id: id,
-        ammount: getSum(_contracts, {
-          provedorContratista: id
-        })
+        company: name,
+        linkCtbook: 'http://contratobook.org/#/contratos?E' + id,
+        linkGoogle: 'https://google.com?q=' + encodeURI(name),
+        totalAmmount: total,
+        ammount: dependenciaAmmount,
+        percent: percent,
       });
     }
     return values.sort(sort);
@@ -102,7 +121,7 @@ module.exports = {
     pageInit = pageInit || 0;
     var limit = 500;
     Empresa.count().exec(function(err, total) {
-      if(err) return sails.log.error(err) && done && done(err);;
+      if (err) return sails.log.error(err) && done && done(err);;
       var times = Math.ceil(total / limit);
       async.timesSeries(times, findCompanyAndSaveStats(pageInit, limit), function(err, processed) {
         if (err) sails.log.error(err) && done && done(err);
@@ -111,20 +130,19 @@ module.exports = {
           counter += pr.length;
         });
         if (done) return done(null, counter);
-        sails.log.info("processed: "+ counter + ', total: '+ total);
+        sails.log.info("processed: " + counter + ', total: ' + total);
       });
     });
-
   }
 }
 
 var findCompanyAndSaveStats = function(pageInit, limit) {
   return function(page, next) {
     if (page < pageInit) return next(null, []);
-    Empresa.find().paginate({page: page + 1, limit: limit}).exec(function(e, companies) {
-      async.map(companies, saveCompanyStats, function(e, companiesUpdate){
-        sails.log.info("page processed: "+ page);
-        next(null, companies.map(function (c) {
+    Empresa.find().paginate({ page: page + 1, limit: limit }).exec(function(e, companies) {
+      async.map(companies, saveCompanyStats, function(e, companiesUpdate) {
+        sails.log.info("page processed: " + page);
+        next(null, companies.map(function(c) {
           return c && c.id;
         }));
       });
@@ -132,21 +150,22 @@ var findCompanyAndSaveStats = function(pageInit, limit) {
   }
 };
 
-var saveCompanyStats = function(company,cb) {
+var saveCompanyStats = function(company, cb) {
+  console.log('update',company);
   Contrato.find({
     where: {
       provedorContratista: company.id
     }
-  }).exec(function(e,contracts){
+  }).exec(function(e, contracts) {
     var stats = StatsService.generalStats(contracts);
-    Empresa.update(company.id,{
-      totalContractAmmount : stats.total,
-      totalContractCount : stats.count,
-      contractsMean : stats.mean,
-      contractsStdev : stats.stdev,
-      contractsMin : stats.limits.min,
-      contractsMax : stats.limits.max
-    },cb);
+    Empresa.update(company.id, {
+      totalContractAmmount: stats.total,
+      totalContractCount: stats.count,
+      contractsMean: stats.mean,
+      contractsStdev: stats.stdev,
+      contractsMin: stats.limits.min,
+      contractsMax: stats.limits.max
+    }, cb);
   });
 }
 
@@ -225,7 +244,7 @@ var getAgencies = function(contracts) {
 }
 var getCompanies = function(contracts) {
   return contracts.map(function(contract) {
-    return contract.proveedor_contratista+"|"+contract.provedorContratista;
+    return contract.provedorContratista.proveedor_contratista+'|'+contract.provedorContratista.id+'|'+contract.provedorContratista.totalContractAmmount;
   }).unique();
 }
 
@@ -235,7 +254,7 @@ var getProcedureTypes = function(contracts) {
   }).unique();
 }
 
-var getMinMax = function(contracts, property,params) {
+var getMinMax = function(contracts, property, params) {
   if (params) contracts = contracts.find(params);
   var vector =
     contracts.map(function(contract) {

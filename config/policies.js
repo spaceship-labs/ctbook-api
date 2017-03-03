@@ -31,6 +31,7 @@ module.exports.policies = {
       'find' : true,
       'findOne' : true,
       'favorites' : true,
+      'definitivos' : true,
     },
     'unidadCompradora' : {
       'find' : true,
