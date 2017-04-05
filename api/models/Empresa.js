@@ -14,23 +14,27 @@ module.exports = {
     totalContractCount: {
       index: true
     },
-    contracts : {
-      collection : 'contrato',
-      via : 'provedorContratista'
+    contracts: {
+      collection: 'contrato',
+      via: 'provedorContratista'
     }
   },
-
+  //TODO  borrar manualmente en la DB registros con "undefined" y "Definitivo" (mayuscula)
   saveSatMatch: function(match) {
     var q = require('q');
     var deferred = q.defer();
     var ids = match.results.map(function(match) {
       return match.id;
     });
+    var status = match.record['Situación del Contribuyente'] ? 'definitivo' :
+      match.record['Situación del contribuyente'] ? 'presunto' : 'no-localizado';
     var update = {};
-    var num = match.record['No.'];
-    delete match.record['No.'];
-    match.record['num'] = num; 
-    update[match.record['Situación del Contribuyente']] = match.record;
+    var idKey = status === 'no-localizado' ? 'N°' :'No.';
+    var num = match.record[idKey];
+    delete match.record[idKey];
+    match.record.num = num;
+    update[status] = match.record;
+    console.log('saving', match.record);
     Empresa.update(ids, update).then(deferred.resolve);
     return deferred.promise;
   }

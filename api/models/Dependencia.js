@@ -28,13 +28,13 @@ module.exports = {
       return StatsService.companyDistribution(contracts);
     });
   },
-  blacklisted: function(id) {
+  blacklisted: function(id,status) {
     var q = require('q');
     var deferred = q.defer();
+    var clause = {};
+    clause[status] = { "!": null }; 
     Empresa.find()
-      .where({
-        "Definitivo": { "!": null }
-      })
+      .where(clause)
       .populate('contracts', { dependencia2: id })
       .then(function(companies) {
         var filtered = companies.filter(function(company) {

@@ -40,13 +40,13 @@ module.exports = {
     var url = 'https://raw.githubusercontent.com/spaceship-labs/listas-negras-sat/master/json/' + list + '-intersection.json';
     JsonService.load(url)
       .then(function(matches) {
-        var operations = matches.map(function(match) {
-          return Empresa.saveSatMatch(match);
-        });
+        var operations = matches.map(Empresa.saveSatMatch);
         return q.all(operations);
       });
   },
 
+
+  //needs refactor
   dates: function() {
     SatService.open().then(function(companies) {
       var operations = companies.map(getContracts);
@@ -67,6 +67,19 @@ module.exports = {
         });
       });
     });
+  },
+
+  dependenciass: function(status) {
+    var condition = status === 'definitivo' ? { definitivo: { '!': null } } :
+      status === 'presunto' ? { presunto: { '!': null } } : { 'no-localizado': { '!': null } };
+    Empresa.find(condition).then(function(companies) {
+      var ids = companies.map(function(company){
+        return company.id;
+      });
+      Contrato.find({provedorContratista:ids}).then(StatsService.agencyDistribution).then(function(stats){
+        console.log(stats);
+      });
+    })
   },
 
   dependencias: function(list) {

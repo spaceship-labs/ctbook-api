@@ -16,14 +16,15 @@ module.exports = {
       res.json({ error: 'You must provide a Dependencia ID' })
     }
   },
-  definitivos: function(req, res) {
+  blacklist: function(req, res) {
     var id = req.allParams().id;
-    if(id){
-      Dependencia.blacklisted(id).then(function(companies){
+    var status = req.allParams().status;
+    if(id && status){
+      Dependencia.blacklisted(id,status).then(function(companies){
         res.json(companies);
-      })
+      });
     }else{
-      res.json({error:'You must provide a Dependencia ID'})
+      res.json({error:'You must provide a Dependencia ID and a Status'})
     }
 
   }
