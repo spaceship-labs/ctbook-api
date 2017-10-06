@@ -16,7 +16,6 @@ module.exports = {
     if (params.where) {
       params.where = JSON.parse(params.where);
       if (params.where.dependencia2 || params.where.provedorContratista || params.where.unidadCompradora) {
-
         if (!params.where.moneda) {
           params.where.moneda = 'MXN';
         }
@@ -49,8 +48,8 @@ module.exports = {
         res.json({
           timeSeries: StatsService.timeSeries(contracts),
           agencyDistribution: StatsService.agencyDistribution(contracts),
-          generalStats : StatsService.generalStats(contracts),
-          frequency : StatsService.frequency(contracts),
+          generalStats: StatsService.generalStats(contracts),
+          frequency: StatsService.frequency(contracts),
         });
       });
 

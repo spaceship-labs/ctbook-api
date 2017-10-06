@@ -29,7 +29,7 @@ module.exports = {
     var status = match.record['Situación del Contribuyente'] ? 'definitivo' :
       match.record['Situación del contribuyente'] ? 'presunto' : 'no-localizado';
     var update = {};
-    var idKey = status === 'no-localizado' ? 'N°' :'No.';
+    var idKey = status === 'no-localizado' ? 'N°' : 'No.';
     var num = match.record[idKey];
     delete match.record[idKey];
     match.record.num = num;
@@ -37,6 +37,11 @@ module.exports = {
     console.log('saving', match.record);
     Empresa.update(ids, update).then(deferred.resolve);
     return deferred.promise;
+  },
+  getBlacklisted: function(status) {
+    var condition = {};
+    condition[status] = { '!': null };
+    return Empresa.find(condition);
   }
 
 };

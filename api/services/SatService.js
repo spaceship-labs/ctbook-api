@@ -9,15 +9,18 @@ var q = require('q');
 var mapSeries = require('promise-map-series');
 
 module.exports = {
-  intersect: function(list) {
+  intersect: function(list, namekey) {
     var deferred = q.defer();
     var url = 'https://raw.githubusercontent.com/spaceship-labs/listas-negras-sat/master/json/' + list + '.json';
-    var nameKey = list === 'no-localizados' ? 'Nombre, Denominación o Razón Social' : 'Nombre del Contribuyente';
+    if (!namekey) {
+      var namekey = list === 'no-localizados' ? 'Nombre, Denominación o Razón Social' : 'Nombre del Contribuyente';
+    }
     JsonService.load(url)
       .then(function(comps) {
+        console.log('searching '+comps.length+' entities');
         companies = comps;
         var names = companies.map(function(company) {
-          return cleanCompanyName(company[nameKey]);
+          return cleanCompanyName(company[namekey]);
         });
         //names = names.slice(0,60);
         mapSeries(names, findCompany).then(function(results) {
@@ -28,8 +31,8 @@ module.exports = {
     return deferred.promise;
   },
 
-  saveIntersection: function(list) {
-    SatService.intersect(list)
+  saveIntersection: function(list,namekey) {
+    SatService.intersect(list,namekey)
       .then(function(matches) {
         return JsonService.save(matches, 'exports/' + list + '-intersection.json');
       });
@@ -45,41 +48,32 @@ module.exports = {
       });
   },
 
-
   //needs refactor
-  dates: function() {
-    SatService.open().then(function(companies) {
-      var operations = companies.map(getContracts);
-      q.all(operations).then(function(contracts) {
-        contracts.forEach(function(set, key) {
-          var company = companies[key];
-          var date = new Date(company.record['Publicación página SAT presuntos']);
-          var remaining = set.filter(function(contract) {
-            if (contract.fecha_inicio.split('/').length == 3) {
-              var contractDate = new Date(contract.fecha_inicio.split('/').reverse().join('-'));
-            } else {
-              var contractDate = new Date(contract.fecha_inicio);
-            }
-            return contractDate >= date;
-          });
-          if (remaining.length)
-            console.log(remaining.length);
+  dates: function(status) {
+    Contrato.getBlacklisted(status)
+      .then(function(contracts) {
+        console.log(contracts.length + ' contracts');
+        var filtered = contracts.filter(function(contract) {
+          var record = contract.provedorContratista[status]
+          var dateKey = status === 'presunto' ? 'Publicación página SAT presuntos' :
+            status === 'definitivo' ? 'Publicación DOF definitivos' : 'Fecha de Publicación'
+          var date = new Date(record[dateKey]);
+          return contract.date() >= date;
         });
+        console.log(filtered.length + ' remaining');
       });
-    });
   },
 
   dependenciass: function(status) {
-    var condition = status === 'definitivo' ? { definitivo: { '!': null } } :
-      status === 'presunto' ? { presunto: { '!': null } } : { 'no-localizado': { '!': null } };
-    Empresa.find(condition).then(function(companies) {
-      var ids = companies.map(function(company){
-        return company.id;
+    Empresa.getBlacklisted(status)
+      .then(function(companies) {
+        var ids = companies.map(function(company) {
+          return company.id;
+        });
+        Contrato.find({ provedorContratista: ids }).then(StatsService.agencyDistribution).then(function(stats) {
+          console.log(stats);
+        });
       });
-      Contrato.find({provedorContratista:ids}).then(StatsService.agencyDistribution).then(function(stats){
-        console.log(stats);
-      });
-    })
   },
 
   dependencias: function(list) {
@@ -107,7 +101,6 @@ module.exports = {
             });
           });
 
-          //console.log('whut');
           depdendencias = Object.keys(dependencias).map(key => dependencias[key]).forEach(function(dep) {
             console.log("'" + dep.name + "','" + dep.contracts + "','" + dep.sum + "'");
           });
