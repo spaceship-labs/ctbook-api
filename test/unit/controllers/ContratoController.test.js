@@ -74,7 +74,7 @@ describe(TEST_NAME, function() {
         .expect('Content-Type', /json/)
         .end(function(err, res) {
           if (err) throw (err);
-          res.body.sum.should.not.be.empty.and.be.a.number;
+          res.body.sum.should.be.a.number;
           done();
         });
     });
