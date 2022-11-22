@@ -25,7 +25,7 @@
     "promise-map-series": "^0.2.3",
     "q": "^1.4.1",
     "rc": "~0.5.0",
-    "sails": "^0.12.14",
+    "sails": "^1.5.3",
     "sails-disk": "~0.10.0",
     "sails-mongo": "git+https://github.com/naderio/sails-mongo.git#0.12.x",
     "twitter": "^1.2.5",
